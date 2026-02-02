@@ -6,6 +6,7 @@ import Konva from "konva";
 import { PlacedFurniture } from "@/lib/types";
 import { useFloorPlanStore } from "@/store/floor-plan-store";
 import { snapToGrid, GRID_SIZE_METERS } from "@/lib/geometry";
+import { computeFurnitureSnap, snapRotation } from "@/lib/snapping";
 
 interface FurnitureItemProps {
   item: PlacedFurniture;
@@ -16,7 +17,7 @@ interface FurnitureItemProps {
 export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItemProps) {
   const shapeRef = useRef<Konva.Rect | Konva.Circle>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
-  const { selectFurniture, updateFurniture, snapEnabled } = useFloorPlanStore();
+  const { selectFurniture, updateFurniture, snapEnabled, floorPlan, setAlignmentGuides } = useFloorPlanStore();
 
   useEffect(() => {
     if (isSelected && transformerRef.current && shapeRef.current) {
@@ -25,20 +26,43 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
     }
   }, [isSelected]);
 
+  const getSnapContext = useCallback(() => ({
+    snapToGrid: snapEnabled,
+    gridSize: GRID_SIZE_METERS,
+    walls: floorPlan?.walls ?? [],
+    rooms: floorPlan?.rooms ?? [],
+  }), [snapEnabled, floorPlan]);
+
+  const handleDragMove = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>) => {
+      if (!snapEnabled) return;
+      const rawX = e.target.x() / pixelsPerUnit;
+      const rawY = e.target.y() / pixelsPerUnit;
+
+      const snap = computeFurnitureSnap(rawX, rawY, item.width, item.height, getSnapContext(), item.rotation);
+      e.target.x(snap.x * pixelsPerUnit);
+      e.target.y(snap.y * pixelsPerUnit);
+      setAlignmentGuides(snap.guides);
+    },
+    [pixelsPerUnit, snapEnabled, item.width, item.height, item.rotation, getSnapContext, setAlignmentGuides]
+  );
+
   const handleDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
-      let x = e.target.x() / pixelsPerUnit;
-      let y = e.target.y() / pixelsPerUnit;
+      const rawX = e.target.x() / pixelsPerUnit;
+      const rawY = e.target.y() / pixelsPerUnit;
 
       if (snapEnabled) {
-        x = snapToGrid(x, GRID_SIZE_METERS);
-        y = snapToGrid(y, GRID_SIZE_METERS);
+        const snap = computeFurnitureSnap(rawX, rawY, item.width, item.height, getSnapContext(), item.rotation);
+        updateFurniture(item.id, { x: snap.x, y: snap.y });
+      } else {
+        updateFurniture(item.id, { x: rawX, y: rawY });
       }
 
-      updateFurniture(item.id, { x, y });
+      setAlignmentGuides([]);
       useFloorPlanStore.getState().pushHistory();
     },
-    [item.id, pixelsPerUnit, snapEnabled, updateFurniture]
+    [item.id, item.width, item.height, pixelsPerUnit, snapEnabled, updateFurniture, getSnapContext, setAlignmentGuides]
   );
 
   const handleTransformEnd = useCallback(() => {
@@ -54,21 +78,32 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
 
     let newWidth = (item.width * pixelsPerUnit * scaleX) / pixelsPerUnit;
     let newHeight = (item.height * pixelsPerUnit * scaleY) / pixelsPerUnit;
+    let newRotation = node.rotation();
 
     if (snapEnabled) {
       newWidth = snapToGrid(newWidth, GRID_SIZE_METERS);
       newHeight = snapToGrid(newHeight, GRID_SIZE_METERS);
+      newRotation = snapRotation(newRotation);
+    }
+
+    let newX = node.x() / pixelsPerUnit;
+    let newY = node.y() / pixelsPerUnit;
+
+    if (snapEnabled) {
+      const snap = computeFurnitureSnap(newX, newY, Math.max(0.5, newWidth), Math.max(0.5, newHeight), getSnapContext(), newRotation);
+      newX = snap.x;
+      newY = snap.y;
     }
 
     updateFurniture(item.id, {
-      x: node.x() / pixelsPerUnit,
-      y: node.y() / pixelsPerUnit,
+      x: newX,
+      y: newY,
       width: Math.max(0.5, newWidth),
       height: Math.max(0.5, newHeight),
-      rotation: node.rotation(),
+      rotation: newRotation,
     });
     useFloorPlanStore.getState().pushHistory();
-  }, [item, pixelsPerUnit, snapEnabled, updateFurniture]);
+  }, [item, pixelsPerUnit, snapEnabled, updateFurniture, getSnapContext]);
 
   const px = item.x * pixelsPerUnit;
   const py = item.y * pixelsPerUnit;
@@ -96,6 +131,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
           draggable
           onClick={handleClick}
           onTap={handleClick}
+          onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onTransformEnd={handleTransformEnd}
         />
@@ -114,6 +150,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
           draggable
           onClick={handleClick}
           onTap={handleClick}
+          onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onTransformEnd={handleTransformEnd}
         />

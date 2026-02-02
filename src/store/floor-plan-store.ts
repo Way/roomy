@@ -29,6 +29,7 @@ const WallOpeningSchema = z.object({
   type: z.enum(["door", "window"]),
   position: z.number(),
   width: z.number(),
+  swingDirection: z.enum(["left-in", "left-out", "right-in", "right-out"]).optional(),
 });
 
 const WallSchema = z.object({

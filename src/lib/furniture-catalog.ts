@@ -49,4 +49,5 @@ export const categoryLabels: Record<string, string> = {
   bathroom: "Bathroom",
   office: "Office",
   dining: "Dining",
+  custom: "Custom",
 };

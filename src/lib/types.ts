@@ -44,7 +44,8 @@ export type FurnitureCategory =
   | "kitchen"
   | "bathroom"
   | "office"
-  | "dining";
+  | "dining"
+  | "custom";
 
 export interface FurnitureDef {
   type: string;
@@ -54,6 +55,18 @@ export interface FurnitureDef {
   defaultWidth: number;
   defaultHeight: number;
   color: string;
+}
+
+export interface CustomFurnitureDef extends FurnitureDef {
+  id: string;
+  isCustom: true;
+  createdAt: string;
+}
+
+export interface RoomyFurnitureLibraryFile {
+  version: 1;
+  savedAt: string;
+  furniture: CustomFurnitureDef[];
 }
 
 export interface PlacedFurniture {

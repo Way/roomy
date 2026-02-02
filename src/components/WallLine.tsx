@@ -1,6 +1,6 @@
 "use client";
 
-import { Group, Line, Rect } from "react-konva";
+import { Group, Line, Rect, Arc } from "react-konva";
 import { Wall } from "@/lib/types";
 
 interface WallLineProps {
@@ -32,6 +32,17 @@ export function WallLine({ wall, pixelsPerUnit }: WallLineProps) {
         const ow = opening.width * pixelsPerUnit;
 
         if (opening.type === "door") {
+          const swing = opening.swingDirection ?? "left-in";
+          const hingeLeft = swing.startsWith("left");
+          const swingIn = swing.endsWith("-in");
+          const hx = hingeLeft ? -ow / 2 : ow / 2;
+          const hy = swingIn ? thickness / 2 : -thickness / 2;
+          let arcRotation: number;
+          if (hingeLeft && swingIn) arcRotation = 0;
+          else if (hingeLeft && !swingIn) arcRotation = 270;
+          else if (!hingeLeft && swingIn) arcRotation = 90;
+          else arcRotation = 180;
+
           return (
             <Group key={opening.id} x={ox} y={oy} rotation={wallAngleDeg}>
               <Rect
@@ -43,26 +54,62 @@ export function WallLine({ wall, pixelsPerUnit }: WallLineProps) {
                 stroke="#9CA3AF"
                 strokeWidth={1}
               />
+              <Arc
+                x={hx}
+                y={hy}
+                innerRadius={0}
+                outerRadius={ow}
+                angle={90}
+                rotation={arcRotation}
+                fill="rgba(156, 163, 175, 0.08)"
+                stroke="#9CA3AF"
+                strokeWidth={0.5}
+                dash={[4, 4]}
+              />
+              <Line
+                points={[hx, hy, hx, hy + (swingIn ? ow : -ow)]}
+                stroke="#9CA3AF"
+                strokeWidth={1}
+              />
             </Group>
           );
         }
         return (
           <Group key={opening.id} x={ox} y={oy} rotation={wallAngleDeg}>
+            {/* Wall break background */}
+            <Rect
+              x={-ow / 2}
+              y={-thickness / 2}
+              width={ow}
+              height={thickness}
+              fill="#EFF6FF"
+            />
+            {/* Glass pane fill */}
+            <Rect
+              x={-ow / 2}
+              y={-thickness / 4}
+              width={ow}
+              height={thickness / 2}
+              fill="rgba(96, 165, 250, 0.25)"
+              stroke="#3B82F6"
+              strokeWidth={1.5}
+            />
+            {/* Center line (glass division) */}
             <Line
               points={[-ow / 2, 0, ow / 2, 0]}
-              stroke="#60A5FA"
-              strokeWidth={3}
-              dash={[4, 4]}
-            />
-            <Line
-              points={[-ow / 2, -thickness / 3, ow / 2, -thickness / 3]}
-              stroke="#60A5FA"
+              stroke="#3B82F6"
               strokeWidth={1}
             />
+            {/* End ticks */}
             <Line
-              points={[-ow / 2, thickness / 3, ow / 2, thickness / 3]}
-              stroke="#60A5FA"
-              strokeWidth={1}
+              points={[-ow / 2, -thickness / 2, -ow / 2, thickness / 2]}
+              stroke="#3B82F6"
+              strokeWidth={2}
+            />
+            <Line
+              points={[ow / 2, -thickness / 2, ow / 2, thickness / 2]}
+              stroke="#3B82F6"
+              strokeWidth={2}
             />
           </Group>
         );

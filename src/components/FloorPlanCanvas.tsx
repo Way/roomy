@@ -134,6 +134,10 @@ export function FloorPlanCanvas() {
   const snapPoint = useCallback(
     (raw: Point, angleFrom?: Point): Point => {
       if (!snapEnabled) return raw;
+      const extraSnapPoints =
+        drawState?.tool === "draw-room" && drawState.points.length >= 3
+          ? [drawState.points[0]]
+          : undefined;
       const result = computeSnap(raw, {
         snapToGrid: true,
         gridSize: GRID_SIZE_METERS,
@@ -141,11 +145,12 @@ export function FloorPlanCanvas() {
         rooms: floorPlan?.rooms ?? [],
         excludeIds: [],
         angleSnapFrom: angleFrom,
+        extraSnapPoints,
       });
       setAlignmentGuides(result.guides);
       return result.snappedPoint;
     },
-    [snapEnabled, floorPlan, setAlignmentGuides]
+    [snapEnabled, floorPlan, setAlignmentGuides, drawState]
   );
 
   // Keyboard shortcuts

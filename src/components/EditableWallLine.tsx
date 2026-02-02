@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Group, Line, Circle, Rect } from "react-konva";
+import { Group, Line, Circle, Rect, Arc } from "react-konva";
 import Konva from "konva";
 import { Wall, Point, WallOpening } from "@/lib/types";
 import { useFloorPlanStore } from "@/store/floor-plan-store";
@@ -251,13 +251,17 @@ export function EditableWallLine({
           const swing = opening.swingDirection ?? "left-in";
           const hingeLeft = swing.startsWith("left");
           const swingIn = swing.endsWith("-in");
-          // Hinge X position: left or right side of the opening
+          // Hinge position along wall edge
           const hx = hingeLeft ? -ow / 2 : ow / 2;
-          // Direction multiplier for the swing arm extending from the hinge
-          const dx = hingeLeft ? 1 : -1;
-          // Y direction: "in" swings toward negative Y (above wall), "out" toward positive Y
-          const dy = swingIn ? -1 : 1;
-          const armLen = ow * 0.7;
+          // "in" swings toward positive Y (below wall in local coords), "out" toward negative Y
+          const hy = swingIn ? thickness / 2 : -thickness / 2;
+          // Arc rotation: angle where the arc starts (door closed = along wall)
+          // Konva arcs sweep clockwise from the rotation angle
+          let arcRotation: number;
+          if (hingeLeft && swingIn) arcRotation = 0;
+          else if (hingeLeft && !swingIn) arcRotation = 270;
+          else if (!hingeLeft && swingIn) arcRotation = 90;
+          else arcRotation = 180;
 
           return (
             <Group
@@ -280,29 +284,30 @@ export function EditableWallLine({
                 strokeWidth={1}
                 listening={false}
               />
-              {/* Door swing arm from hinge */}
-              <Line
-                points={[
-                  hx,
-                  dy * (-thickness / 2),
-                  hx,
-                  dy * (-thickness / 2) + dy * (-armLen),
-                ]}
+              {/* Filled quarter-circle sweep area */}
+              <Arc
+                x={hx}
+                y={hy}
+                innerRadius={0}
+                outerRadius={ow}
+                angle={90}
+                rotation={arcRotation}
+                fill="rgba(156, 163, 175, 0.08)"
                 stroke="#9CA3AF"
                 strokeWidth={0.5}
+                dash={[4, 4]}
                 listening={false}
               />
-              {/* Door swing arc */}
+              {/* Door leaf line (open position, perpendicular to wall) */}
               <Line
                 points={[
-                  hx + dx * armLen * Math.cos(Math.PI / 4),
-                  dy * (-thickness / 2) + dy * (-armLen * Math.sin(Math.PI / 4)),
                   hx,
-                  dy * (-thickness / 2) + dy * (-armLen),
+                  hy,
+                  hx,
+                  hy + (swingIn ? ow : -ow),
                 ]}
                 stroke="#9CA3AF"
-                strokeWidth={0.5}
-                dash={[3, 3]}
+                strokeWidth={1}
                 listening={false}
               />
             </Group>
@@ -320,25 +325,44 @@ export function EditableWallLine({
             onDragMove={handleOpeningDragMove(opening)}
             onDragEnd={handleOpeningDragEnd(opening)}
           >
-            {/* Window center line */}
+            {/* Wall break background */}
+            <Rect
+              x={-ow / 2}
+              y={-thickness / 2}
+              width={ow}
+              height={thickness}
+              fill="#EFF6FF"
+              listening={false}
+            />
+            {/* Glass pane fill */}
+            <Rect
+              x={-ow / 2}
+              y={-thickness / 4}
+              width={ow}
+              height={thickness / 2}
+              fill="rgba(96, 165, 250, 0.25)"
+              stroke="#3B82F6"
+              strokeWidth={1.5}
+              listening={false}
+            />
+            {/* Center line (glass division) */}
             <Line
               points={[-ow / 2, 0, ow / 2, 0]}
-              stroke="#60A5FA"
-              strokeWidth={3}
-              dash={[4, 4]}
-              listening={false}
-            />
-            {/* Window pane lines */}
-            <Line
-              points={[-ow / 2, -thickness / 3, ow / 2, -thickness / 3]}
-              stroke="#60A5FA"
+              stroke="#3B82F6"
               strokeWidth={1}
               listening={false}
             />
+            {/* End ticks */}
             <Line
-              points={[-ow / 2, thickness / 3, ow / 2, thickness / 3]}
-              stroke="#60A5FA"
-              strokeWidth={1}
+              points={[-ow / 2, -thickness / 2, -ow / 2, thickness / 2]}
+              stroke="#3B82F6"
+              strokeWidth={2}
+              listening={false}
+            />
+            <Line
+              points={[ow / 2, -thickness / 2, ow / 2, thickness / 2]}
+              stroke="#3B82F6"
+              strokeWidth={2}
               listening={false}
             />
           </Group>
