@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod/v4";
+import { NextRequest, NextResponse } from 'next/server';
+import Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod/v4';
 
 const ParsedFurnitureSchema = z.object({
   label: z.string(),
-  shape: z.enum(["rect", "circle", "ellipse"]),
+  shape: z.enum(['rect', 'circle', 'ellipse']),
   width: z.number(),
   height: z.number(),
   color: z.string(),
   category: z.enum([
-    "living",
-    "bedroom",
-    "kitchen",
-    "bathroom",
-    "office",
-    "dining",
-    "custom",
+    'living',
+    'bedroom',
+    'kitchen',
+    'bathroom',
+    'office',
+    'dining',
+    'custom',
   ]),
 });
 
@@ -35,46 +35,46 @@ export async function POST(request: NextRequest) {
   try {
     const { text } = await request.json();
 
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
-      return NextResponse.json(
-        { error: "No text provided" },
-        { status: 400 }
-      );
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return NextResponse.json({ error: 'No text provided' }, { status: 400 });
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "ANTHROPIC_API_KEY not configured" },
-        { status: 500 }
+        { error: 'ANTHROPIC_API_KEY not configured' },
+        { status: 500 },
       );
     }
 
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
-      model: "claude-haiku-4-20250414",
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 256,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: text.trim() }],
+      messages: [{ role: 'user', content: text.trim() }],
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
+    const textBlock = response.content.find((b) => b.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') {
       return NextResponse.json(
-        { error: "No response from model" },
-        { status: 500 }
+        { error: 'No response from model' },
+        { status: 500 },
       );
     }
 
-    const parsed = JSON.parse(textBlock.text);
+    const jsonText = textBlock.text.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    const parsed = JSON.parse(jsonText);
     const validated = ParsedFurnitureSchema.parse(parsed);
 
     return NextResponse.json(validated);
   } catch (error) {
-    console.error("Parse furniture error:", error);
+    console.error('Parse furniture error:', error);
     const message =
-      error instanceof Error ? error.message : "Failed to parse furniture description";
+      error instanceof Error
+        ? error.message
+        : 'Failed to parse furniture description';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
