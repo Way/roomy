@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import Konva from "konva";
 import { EditorTool } from "@/lib/types";
+import { toast } from "sonner";
 
 interface ToolbarProps {
   stageRef: React.RefObject<Konva.Stage | null>;
@@ -47,6 +48,8 @@ export function Toolbar({ stageRef }: ToolbarProps) {
     floorPlan,
     saveToFile,
     loadFromFile,
+    shareToUrl,
+    furniture,
   } = useFloorPlanStore();
 
   const loadInputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +65,16 @@ export function Toolbar({ stageRef }: ToolbarProps) {
     link.download = "floor-plan.png";
     link.href = uri;
     link.click();
+  };
+
+  const handleShare = async () => {
+    try {
+      const url = shareToUrl();
+      await navigator.clipboard.writeText(url);
+      toast.success("Share link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy share link");
+    }
   };
 
   const handleLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,6 +271,21 @@ export function Toolbar({ stageRef }: ToolbarProps) {
           className="hidden"
           onChange={handleLoad}
         />
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={handleShare}
+              disabled={!floorPlan && furniture.length === 0}
+            >
+              Share
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Copy shareable link to clipboard</TooltipContent>
+        </Tooltip>
 
         <Button
           variant="outline"

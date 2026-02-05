@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- `npm run dev` — start Next.js dev server (http://localhost:3000)
-- `npm run build` — production build
-- `npm run lint` — run ESLint (flat config with Next.js core-web-vitals + TypeScript rules)
+- `bun run dev` — start Next.js dev server (http://localhost:3000)
+- `bun run build` — production build
+- `bun run lint` — run ESLint (flat config with Next.js core-web-vitals + TypeScript rules)
+- `bun install` — install dependencies
 
 No test framework is configured.
 

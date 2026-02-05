@@ -21,6 +21,7 @@ import {
   recalculateRoomArea,
 } from "@/lib/vertex-utils";
 import { normalizeWallOpenings } from "@/lib/wall-openings";
+import { encodeFloorPlan } from "@/lib/share";
 
 const PointSchema = z.object({ x: z.number(), y: z.number() });
 
@@ -194,9 +195,10 @@ interface FloorPlanStore {
   setCalibrationPoints: (pts: { first: Point; second?: Point } | null) => void;
   applyScaleCalibration: (realWorldDistance: number) => void;
 
-  // Save/Load
+  // Save/Load/Share
   saveToFile: () => void;
   loadFromFile: (data: RoomySaveFile) => void;
+  shareToUrl: () => string;
 }
 
 export const useFloorPlanStore = create<FloorPlanStore>((set, get) => ({
@@ -685,6 +687,20 @@ export const useFloorPlanStore = create<FloorPlanStore>((set, get) => ({
       activeTool: "select" as EditorTool,
     });
     get().pushHistory();
+  },
+
+  shareToUrl: () => {
+    const { floorPlan, furniture, pixelsPerUnit, zoom, panOffset } = get();
+    const saveData: RoomySaveFile = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      floorPlan: floorPlan ? JSON.parse(JSON.stringify(floorPlan)) : null,
+      furniture: JSON.parse(JSON.stringify(furniture)),
+      uploadedImage: null,
+      canvasSettings: { pixelsPerUnit, zoom, panOffset: { ...panOffset } },
+    };
+    const compressed = encodeFloorPlan(saveData);
+    return `${window.location.origin}${window.location.pathname}#plan=${compressed}`;
   },
 
   applyScaleCalibration: (realWorldDistance) => {

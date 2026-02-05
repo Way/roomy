@@ -5,6 +5,7 @@ import { FloorPlanUploader } from "@/components/FloorPlanUploader";
 import { FurnitureLibrary } from "@/components/FurnitureLibrary";
 import { PropertyPanel } from "@/components/PropertyPanel";
 import { Separator } from "@/components/ui/separator";
+import { useLoadFromUrl } from "@/hooks/use-load-from-url";
 
 const CalibrationDialog = dynamic(
   () =>
@@ -38,6 +39,8 @@ const FloorPlanCanvas = dynamic(
 );
 
 export default function Home() {
+  useLoadFromUrl();
+
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
