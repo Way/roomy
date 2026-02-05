@@ -30,7 +30,7 @@ const ROOM_COLORS = [
 export function FloorPlanCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [overlayImage, setOverlayImage] = useState<HTMLImageElement | null>(
     null
   );
