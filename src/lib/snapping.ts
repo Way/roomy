@@ -164,17 +164,12 @@ export interface FurnitureSnapResult {
 
 const FURNITURE_ALIGN_TOLERANCE = 0.25; // units
 const ROTATION_SNAP_INCREMENT = 15; // degrees
-const ROTATION_SNAP_TOLERANCE = 5; // degrees
 
 /**
- * Snap a rotation angle to the nearest increment (15°) if within tolerance.
+ * Snap a rotation angle to the nearest 15° increment.
  */
 export function snapRotation(degrees: number): number {
-  const nearest = Math.round(degrees / ROTATION_SNAP_INCREMENT) * ROTATION_SNAP_INCREMENT;
-  if (Math.abs(degrees - nearest) < ROTATION_SNAP_TOLERANCE) {
-    return nearest;
-  }
-  return degrees;
+  return Math.round(degrees / ROTATION_SNAP_INCREMENT) * ROTATION_SNAP_INCREMENT;
 }
 
 /**

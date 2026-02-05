@@ -250,7 +250,8 @@ export function FloorPlanCanvas() {
       // Arrow key nudge
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         const store = useFloorPlanStore.getState();
-        if (!store.selectedTarget || !store.floorPlan) return;
+        const hasSelection = store.selectedTarget || store.selectedFurnitureId;
+        if (!hasSelection) return;
         e.preventDefault();
         const delta = e.shiftKey ? 0.5 : 0.1;
         const dx =
@@ -258,32 +259,45 @@ export function FloorPlanCanvas() {
         const dy =
           e.key === "ArrowUp" ? -delta : e.key === "ArrowDown" ? delta : 0;
 
-        if (store.selectedTarget.type === "wall") {
-          const wall = store.floorPlan.walls.find(
-            (w) => w.id === store.selectedTarget!.id
+        if (store.selectedFurnitureId) {
+          const item = store.furniture.find(
+            (f) => f.id === store.selectedFurnitureId
           );
-          if (wall) {
-            store.moveWallEndpoint(wall.id, "start", {
-              x: wall.start.x + dx,
-              y: wall.start.y + dy,
-            });
-            store.moveWallEndpoint(wall.id, "end", {
-              x: wall.end.x + dx,
-              y: wall.end.y + dy,
+          if (item) {
+            store.updateFurniture(item.id, {
+              x: item.x + dx,
+              y: item.y + dy,
             });
             store.pushHistory();
           }
-        } else if (store.selectedTarget.type === "room") {
-          const room = store.floorPlan.rooms.find(
-            (r) => r.id === store.selectedTarget!.id
-          );
-          if (room) {
-            store.updateRoom(room.id, {
-              vertices: room.vertices.map((v) => ({
-                x: v.x + dx,
-                y: v.y + dy,
-              })),
-            });
+        } else if (store.selectedTarget && store.floorPlan) {
+          if (store.selectedTarget.type === "wall") {
+            const wall = store.floorPlan.walls.find(
+              (w) => w.id === store.selectedTarget!.id
+            );
+            if (wall) {
+              store.moveWallEndpoint(wall.id, "start", {
+                x: wall.start.x + dx,
+                y: wall.start.y + dy,
+              });
+              store.moveWallEndpoint(wall.id, "end", {
+                x: wall.end.x + dx,
+                y: wall.end.y + dy,
+              });
+              store.pushHistory();
+            }
+          } else if (store.selectedTarget.type === "room") {
+            const room = store.floorPlan.rooms.find(
+              (r) => r.id === store.selectedTarget!.id
+            );
+            if (room) {
+              store.updateRoom(room.id, {
+                vertices: room.vertices.map((v) => ({
+                  x: v.x + dx,
+                  y: v.y + dy,
+                })),
+              });
+            }
           }
         }
       }
