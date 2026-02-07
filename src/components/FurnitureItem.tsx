@@ -133,9 +133,19 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected, onContextMenu }
 
   const labelFontSize = Math.min(10, Math.max(7, pw / item.label.length));
 
+  // Compute the visual center of the shape after rotation
+  const isCircle = item.shape === "circle";
+  const rad = ((item.rotation ?? 0) * Math.PI) / 180;
+  const labelCenterX = isCircle
+    ? px + pw / 2
+    : px + (pw / 2) * Math.cos(rad) - (ph / 2) * Math.sin(rad);
+  const labelCenterY = isCircle
+    ? py + ph / 2
+    : py + (pw / 2) * Math.sin(rad) + (ph / 2) * Math.cos(rad);
+
   return (
     <Group>
-      {item.shape === "circle" ? (
+      {isCircle ? (
         <Circle
           ref={shapeRef as React.RefObject<Konva.Circle>}
           x={px + pw / 2}
@@ -175,9 +185,10 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected, onContextMenu }
         />
       )}
       <Text
-        x={px + 2}
-        y={py + ph / 2 - labelFontSize / 2}
-        width={pw - 4}
+        x={labelCenterX}
+        y={labelCenterY - labelFontSize / 2}
+        width={pw}
+        offsetX={pw / 2}
         text={item.label}
         fontSize={labelFontSize}
         fill={contrastTextColor(item.color)}
