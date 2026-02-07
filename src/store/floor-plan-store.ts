@@ -688,7 +688,7 @@ export const useFloorPlanStore = create<FloorPlanStore>((set, get) => ({
     const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.download = "floor-plan.roomy.json";
+    link.download = `roomy-${new Date().toISOString().slice(0, 19)}.json`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
