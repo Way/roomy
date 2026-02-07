@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCallback, useRef } from "react";
-import { useFloorPlanStore } from "@/store/floor-plan-store";
-import { useAnalyzeFloorPlan } from "@/hooks/useAnalyzeFloorPlan";
-import { Button } from "@/components/ui/button";
+import { useCallback, useRef } from 'react';
+import { useFloorPlanStore } from '@/store/floor-plan-store';
+import { useAnalyzeFloorPlan } from '@/hooks/useAnalyzeFloorPlan';
+import { Button } from '@/components/ui/button';
 
 export function FloorPlanUploader() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,8 +25,10 @@ export function FloorPlanUploader() {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-        useFloorPlanStore.getState().setAnalysisError("Please upload an image file");
+      if (!file.type.startsWith('image/')) {
+        useFloorPlanStore
+          .getState()
+          .setAnalysisError('Please upload an image file');
         return;
       }
 
@@ -47,7 +49,7 @@ export function FloorPlanUploader() {
             setFloorPlan({
               rooms: [],
               walls: [],
-              units: "meters",
+              units: 'meters',
               scale: 1,
               overallWidth: Math.round(baseWidth * 100) / 100,
               overallHeight: Math.round(height * 100) / 100,
@@ -59,7 +61,7 @@ export function FloorPlanUploader() {
       };
       reader.readAsDataURL(file);
     },
-    [setUploadedImage, setFloorPlan, setShowImageOverlay]
+    [setUploadedImage, setFloorPlan, setShowImageOverlay],
   );
 
   return (
@@ -83,12 +85,12 @@ export function FloorPlanUploader() {
               {isAnalyzing ? (
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {analysisProgress || "Analyzing..."}
+                  {analysisProgress || 'Analyzing...'}
                 </span>
               ) : floorPlan ? (
-                "Re-analyze"
+                'Re-analyze'
               ) : (
-                "Analyze Floor Plan"
+                'Analyze Floor Plan'
               )}
             </Button>
             <Button
@@ -97,7 +99,7 @@ export function FloorPlanUploader() {
               className="text-xs"
               onClick={() => {
                 clearFloorPlan();
-                if (inputRef.current) inputRef.current.value = "";
+                if (inputRef.current) inputRef.current.value = '';
               }}
             >
               Clear
@@ -127,14 +129,6 @@ export function FloorPlanUploader() {
       {analysisError && (
         <div className="text-xs text-destructive bg-destructive/10 rounded-md p-2">
           {analysisError}
-        </div>
-      )}
-
-      {floorPlan && (
-        <div className="text-xs text-muted-foreground bg-accent rounded-md p-2">
-          Detected {floorPlan.rooms.length} rooms, {floorPlan.walls.length} walls
-          <br />
-          {floorPlan.overallWidth} x {floorPlan.overallHeight} {floorPlan.units}
         </div>
       )}
     </div>

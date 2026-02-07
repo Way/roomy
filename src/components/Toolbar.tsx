@@ -53,11 +53,11 @@ interface ToolbarProps {
 }
 
 const tools: { tool: EditorTool; label: string; shortcut: string; icon: LucideIcon }[] = [
-  { tool: "select", label: "Select", shortcut: "V", icon: MousePointer2 },
+  { tool: "select", label: "Select", shortcut: "S", icon: MousePointer2 },
   { tool: "draw-wall", label: "Draw Wall", shortcut: "W", icon: Minus },
-  { tool: "draw-room", label: "Draw Room", shortcut: "R", icon: Pentagon },
+  { tool: "draw-room", label: "Draw Room", shortcut: "A", icon: Pentagon },
   { tool: "add-door", label: "Add Door", shortcut: "D", icon: DoorOpen },
-  { tool: "add-window", label: "Add Window", shortcut: "N", icon: Grid2x2 },
+  { tool: "add-window", label: "Add Window", shortcut: "F", icon: Grid2x2 },
   { tool: "calibrate", label: "Calibrate", shortcut: "C", icon: Ruler },
 ];
 

@@ -175,19 +175,19 @@ export function FloorPlanCanvas() {
       // Tool shortcuts
       if (!e.metaKey && !e.ctrlKey) {
         switch (e.key.toLowerCase()) {
-          case "v":
-            setActiveTool("select");
-            return;
           case "w":
             setActiveTool("draw-wall");
             return;
-          case "r":
+          case "a":
             setActiveTool("draw-room");
+            return;
+          case "s":
+            setActiveTool("select");
             return;
           case "d":
             setActiveTool("add-door");
             return;
-          case "n":
+          case "f":
             setActiveTool("add-window");
             return;
           case "c":

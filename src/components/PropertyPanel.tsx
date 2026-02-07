@@ -478,7 +478,7 @@ export function PropertyPanel() {
           <h3 className="font-semibold text-foreground">Floor Plan Info</h3>
           <div className="space-y-1 text-xs">
             <p>
-              Size: {floorPlan.overallWidth} x {floorPlan.overallHeight}{" "}
+              Size: {floorPlan.overallWidth.toFixed(2)} x {floorPlan.overallHeight.toFixed(2)}{" "}
               {floorPlan.units}
             </p>
             <p>Rooms: {floorPlan.rooms.length}</p>
