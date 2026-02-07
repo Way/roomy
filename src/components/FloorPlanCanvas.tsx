@@ -578,7 +578,7 @@ export function FloorPlanCanvas() {
             scaleY={zoom}
             x={panOffset.x}
             y={panOffset.y}
-            draggable={spaceHeld}
+            draggable={spaceHeld || activeTool === "select"}
             onDragEnd={(e) => {
               if (e.target === stageRef.current) {
                 setPanOffset({ x: e.target.x(), y: e.target.y() });
