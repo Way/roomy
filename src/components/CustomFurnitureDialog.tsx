@@ -132,8 +132,8 @@ function FurnitureForm({
           <Input
             id="furniture-width"
             type="number"
-            step="0.05"
-            min="0.1"
+            step="0.01"
+            min="0.05"
             value={width}
             onChange={(e) => setWidth(e.target.value)}
           />
@@ -143,8 +143,8 @@ function FurnitureForm({
           <Input
             id="furniture-height"
             type="number"
-            step="0.05"
-            min="0.1"
+            step="0.01"
+            min="0.05"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
           />

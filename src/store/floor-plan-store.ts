@@ -117,6 +117,7 @@ interface FloorPlanStore {
   furniture: PlacedFurniture[];
   selectedFurnitureId: string | null;
   addFurniture: (def: FurnitureDef) => void;
+  duplicateFurniture: (id: string) => void;
   updateFurniture: (id: string, updates: Partial<PlacedFurniture>) => void;
   removeFurniture: (id: string) => void;
   selectFurniture: (id: string | null) => void;
@@ -253,6 +254,26 @@ export const useFloorPlanStore = create<FloorPlanStore>((set, get) => ({
     set((s) => ({
       furniture: [...s.furniture, item],
       selectedFurnitureId: item.id,
+      selectedTarget: null,
+    }));
+    get().pushHistory();
+  },
+
+  duplicateFurniture: (id) => {
+    const state = get();
+    const original = state.furniture.find((f) => f.id === id);
+    if (!original) return;
+
+    const duplicate: PlacedFurniture = {
+      ...original,
+      id: uuidv4(),
+      x: original.x + 0.5,
+      y: original.y + 0.5,
+    };
+
+    set((s) => ({
+      furniture: [...s.furniture, duplicate],
+      selectedFurnitureId: duplicate.id,
       selectedTarget: null,
     }));
     get().pushHistory();

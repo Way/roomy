@@ -1,4 +1,4 @@
-import { Point, Wall, Room, AlignmentGuide } from "./types";
+import { Point, Wall, Room, AlignmentGuide, PlacedFurniture } from "./types";
 import { distance, snapToGrid, GRID_SIZE_METERS, projectPointOnLine } from "./geometry";
 
 export interface SnapContext {
@@ -153,6 +153,8 @@ export interface FurnitureSnapContext {
   gridSize: number;
   walls: Wall[];
   rooms: Room[];
+  furniture?: PlacedFurniture[];
+  excludeFurnitureId?: string;
 }
 
 export interface FurnitureSnapResult {
@@ -253,6 +255,16 @@ export function computeFurnitureSnap(
     for (const v of room.vertices) {
       refXs.push(v.x);
       refYs.push(v.y);
+    }
+  }
+
+  // Add other furniture bounding box edges as snap references
+  if (context.furniture) {
+    for (const f of context.furniture) {
+      if (f.id === context.excludeFurnitureId) continue;
+      const fbb = rotatedBoundingBox(f.x, f.y, f.width, f.height, f.rotation);
+      refXs.push(fbb.minX, fbb.cx, fbb.maxX);
+      refYs.push(fbb.minY, fbb.cy, fbb.maxY);
     }
   }
 

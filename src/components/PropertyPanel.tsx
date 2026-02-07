@@ -370,12 +370,12 @@ export function PropertyPanel() {
             <Label className="text-xs">Width ({units})</Label>
             <Input
               type="number"
-              step="0.1"
-              min="0.5"
+              step="0.01"
+              min="0.05"
               value={selectedFurniture.width}
               onChange={(e) =>
                 updateFurniture(selectedFurniture.id, {
-                  width: parseFloat(e.target.value) || 0.5,
+                  width: parseFloat(e.target.value) || 0.05,
                 })
               }
               className="h-8 text-sm"
@@ -385,12 +385,12 @@ export function PropertyPanel() {
             <Label className="text-xs">Height ({units})</Label>
             <Input
               type="number"
-              step="0.1"
-              min="0.5"
+              step="0.01"
+              min="0.05"
               value={selectedFurniture.height}
               onChange={(e) =>
                 updateFurniture(selectedFurniture.id, {
-                  height: parseFloat(e.target.value) || 0.5,
+                  height: parseFloat(e.target.value) || 0.05,
                 })
               }
               className="h-8 text-sm"

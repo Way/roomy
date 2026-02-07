@@ -5,19 +5,20 @@ import { Rect, Circle, Group, Text, Transformer } from "react-konva";
 import Konva from "konva";
 import { PlacedFurniture } from "@/lib/types";
 import { useFloorPlanStore } from "@/store/floor-plan-store";
-import { snapToGrid, GRID_SIZE_METERS } from "@/lib/geometry";
+import { snapToGrid, GRID_SIZE_METERS, contrastTextColor } from "@/lib/geometry";
 import { computeFurnitureSnap, snapRotation } from "@/lib/snapping";
 
 interface FurnitureItemProps {
   item: PlacedFurniture;
   pixelsPerUnit: number;
   isSelected: boolean;
+  onContextMenu?: (e: { itemId: string; clientX: number; clientY: number }) => void;
 }
 
-export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItemProps) {
+export function FurnitureItem({ item, pixelsPerUnit, isSelected, onContextMenu }: FurnitureItemProps) {
   const shapeRef = useRef<Konva.Rect | Konva.Circle>(null);
   const transformerRef = useRef<Konva.Transformer>(null);
-  const { selectFurniture, updateFurniture, snapEnabled, floorPlan, setAlignmentGuides } = useFloorPlanStore();
+  const { selectFurniture, updateFurniture, snapEnabled, floorPlan, furniture, setAlignmentGuides } = useFloorPlanStore();
 
   useEffect(() => {
     if (isSelected && transformerRef.current && shapeRef.current) {
@@ -31,7 +32,9 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
     gridSize: GRID_SIZE_METERS,
     walls: floorPlan?.walls ?? [],
     rooms: floorPlan?.rooms ?? [],
-  }), [snapEnabled, floorPlan]);
+    furniture,
+    excludeFurnitureId: item.id,
+  }), [snapEnabled, floorPlan, furniture, item.id]);
 
   const handleDragMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
@@ -90,7 +93,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
     let newY = node.y() / pixelsPerUnit;
 
     if (snapEnabled) {
-      const snap = computeFurnitureSnap(newX, newY, Math.max(0.5, newWidth), Math.max(0.5, newHeight), getSnapContext(), newRotation);
+      const snap = computeFurnitureSnap(newX, newY, Math.max(0.05, newWidth), Math.max(0.05, newHeight), getSnapContext(), newRotation);
       newX = snap.x;
       newY = snap.y;
     }
@@ -98,8 +101,8 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
     updateFurniture(item.id, {
       x: newX,
       y: newY,
-      width: Math.max(0.5, newWidth),
-      height: Math.max(0.5, newHeight),
+      width: Math.max(0.05, newWidth),
+      height: Math.max(0.05, newHeight),
       rotation: newRotation,
     });
     useFloorPlanStore.getState().pushHistory();
@@ -113,6 +116,20 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
   const handleClick = useCallback(() => {
     selectFurniture(item.id);
   }, [item.id, selectFurniture]);
+
+  const handleContextMenu = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault();
+      e.evt.stopPropagation();
+      selectFurniture(item.id);
+      onContextMenu?.({
+        itemId: item.id,
+        clientX: e.evt.clientX,
+        clientY: e.evt.clientY,
+      });
+    },
+    [item.id, selectFurniture, onContextMenu]
+  );
 
   const labelFontSize = Math.min(10, Math.max(7, pw / item.label.length));
 
@@ -131,6 +148,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
           draggable
           onClick={handleClick}
           onTap={handleClick}
+          onContextMenu={handleContextMenu}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onTransformEnd={handleTransformEnd}
@@ -150,6 +168,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
           draggable
           onClick={handleClick}
           onTap={handleClick}
+          onContextMenu={handleContextMenu}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onTransformEnd={handleTransformEnd}
@@ -161,7 +180,7 @@ export function FurnitureItem({ item, pixelsPerUnit, isSelected }: FurnitureItem
         width={pw - 4}
         text={item.label}
         fontSize={labelFontSize}
-        fill="#1F2937"
+        fill={contrastTextColor(item.color)}
         align="center"
         listening={false}
       />

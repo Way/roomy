@@ -123,3 +123,49 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Print overlay: hidden off-screen by default */
+.print-overlay {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  background: white;
+  color: black;
+  z-index: 9999;
+}
+
+/* When print-mode is active, position it on-screen for printing */
+body.print-mode .print-overlay {
+  left: 0;
+  right: 0;
+}
+
+@media print {
+  /* Hide everything except the print overlay */
+  body > *:not(.print-overlay) {
+    display: none !important;
+  }
+
+  .print-overlay {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    background: white !important;
+  }
+
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+}
